@@ -530,30 +530,6 @@ st.markdown("")
 # TEAM SECTION
 # ============================================================================
 
-st.markdown("""
-<div class="team-section">
-    <h4 style="text-align:center; margin-bottom:0.3em; color:#1F2937;">👥 Meet the Team</h4>
-    <p style="text-align:center; color:#6B7280; font-size:0.9em;">Built for IBM Bob Hackathon 2026</p>
-    <div class="team-grid">
-        <div class="team-card">
-            <div class="team-avatar">S</div>
-            <div class="team-card-name">Sandzhi-Garia Ochirov</div>
-            <div class="team-card-handle">@Gary04</div>
-        </div>
-        <div class="team-card">
-            <div class="team-avatar">C</div>
-            <div class="team-card-name">Cyril Nii Teiko Tagoe</div>
-            <div class="team-card-handle">@cyril_tagoe794</div>
-        </div>
-        <div class="team-card">
-            <div class="team-avatar">G</div>
-            <div class="team-card-name">George Jabley</div>
-            <div class="team-card-handle">@george_jabley451</div>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
 st.divider()
 
 # ============================================================================
@@ -986,9 +962,6 @@ st.markdown("""
 <div class="footer-section">
     <p style="margin-bottom: 0.5em;">
         <strong>🏗️ App Architect Studio</strong> &nbsp;|&nbsp; IBM Bob Hackathon 2026
-    </p>
-    <p style="margin-bottom: 0.3em;">
-        Built by <strong>Sandzhi-Garia Ochirov</strong>, <strong>Cyril Nii Teiko Tagoe</strong> & <strong>George Jabley</strong>
     </p>
     <p>
         <a href="https://github.com/techwokx-cloud/app-architect-studio" target="_blank">GitHub</a>
