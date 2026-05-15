@@ -18,6 +18,16 @@ load_dotenv()
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 ICONS_DIR = os.path.join(SCRIPT_DIR, "icons")
 
+def load_icon(filename, width=36):
+    """Safely load an icon image, skip if not found"""
+    icon_path = os.path.join(ICONS_DIR, filename)
+    if os.path.exists(icon_path):
+        st.image(icon_path, width=width)
+    else:
+        # Fallback: just skip the icon silently
+        pass
+
+
 # ============================================================================
 # PAGE CONFIG
 # ============================================================================
@@ -571,7 +581,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # ============================================================================
 
 with tab1:
-    st.image(os.path.join(ICONS_DIR, "icons8-vision-48.png"), width=36)
+    load_icon("icons8-vision-48.png")
     st.markdown("#### Vision-to-Code")
     col1, col2 = st.columns([1, 1], gap="large")
     
@@ -676,7 +686,7 @@ with tab1:
 # ============================================================================
 
 with tab2:
-    st.image(os.path.join(ICONS_DIR, "icons8-chat-bubble-48.png"), width=36)
+    load_icon("icons8-chat-bubble-48.png")
     st.markdown("#### Text-to-Code")
     st.markdown("Describe the UI component or page you want to build — IBM Bob will generate production-ready code.")
     
@@ -787,7 +797,7 @@ with tab2:
 # ============================================================================
 
 with tab3:
-    st.image(os.path.join(ICONS_DIR, "icons8-mic-48.png"), width=36)
+    load_icon("icons8-mic-48.png")
     st.markdown("#### Voice-to-Code")
     st.markdown("Describe your UI requirements by voice — Speechmatic transcribes and IBM Bob generates the code.")
     
@@ -847,7 +857,7 @@ with tab3:
 # ============================================================================
 
 with tab4:
-    st.image(os.path.join(ICONS_DIR, "icons8-language-48.png"), width=36)
+    load_icon("icons8-language-48.png")
     st.markdown("#### Multi-Language Generation")
     st.markdown("Generate UI components with fully internationalized text content — powered by **NativelyAI**.")
     
@@ -893,7 +903,7 @@ with tab4:
 # ============================================================================
 
 with tab5:
-    st.image(os.path.join(ICONS_DIR, "icons8-dashboard-layout-48.png"), width=36)
+    load_icon("icons8-dashboard-layout-48.png")
     st.markdown("#### Session Dashboard")
     st.caption("Real-time metrics for your current session")
     
