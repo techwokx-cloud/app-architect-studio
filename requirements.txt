@@ -3,3 +3,5 @@ requests
 Pillow
 python-dotenv
 ibm-watsonx-ai
+speechmatics-python
+boto3
