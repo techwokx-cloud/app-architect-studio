@@ -420,6 +420,24 @@ with st.sidebar:
     
     st.divider()
     
+    # Default language selector
+    st.markdown("##### 🌍 Default Language")
+    default_language = st.selectbox(
+        "Output language for all generated code:",
+        ["en", "es", "fr", "de", "ja"],
+        format_func=lambda x: {
+            "en": "🇺🇸 English",
+            "es": "🇪🇸 Español",
+            "fr": "🇫🇷 Français",
+            "de": "🇩🇪 Deutsch",
+            "ja": "🇯🇵 日本語"
+        }[x],
+        key="default_language",
+        help="This applies to all tabs — no need to re-select each time"
+    )
+    
+    st.divider()
+    
     # Backend status
     backend_ok = test_backend()
     if backend_ok:
@@ -537,11 +555,11 @@ st.divider()
 # ============================================================================
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🎨 Vision-to-Code",
-    "💬 Text Prompt",
-    "🎤 Voice Mode",
-    "🌍 Multi-Language",
-    "📊 Dashboard"
+    "Vision-to-Code",
+    "Text Prompt",
+    "Voice Mode",
+    "Multi-Language",
+    "Dashboard"
 ])
 
 # ============================================================================
@@ -549,6 +567,8 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # ============================================================================
 
 with tab1:
+    st.image("icons/icons8-vision-48.png", width=36)
+    st.markdown("#### Vision-to-Code")
     col1, col2 = st.columns([1, 1], gap="large")
     
     with col1:
@@ -622,18 +642,8 @@ with tab1:
             )
         
         with col2:
-            language = st.selectbox(
-                "Output Language:",
-                ["en", "es", "fr", "de", "ja"],
-                format_func=lambda x: {
-                    "en": "🇺🇸 English",
-                    "es": "🇪🇸 Español",
-                    "fr": "🇫🇷 Français",
-                    "de": "🇩🇪 Deutsch",
-                    "ja": "🇯🇵 日本語"
-                }[x],
-                key="language_selector"
-            )
+            lang_labels = {"en": "🇺🇸 English", "es": "🇪🇸 Español", "fr": "🇫🇷 Français", "de": "🇩🇪 Deutsch", "ja": "🇯🇵 日本語"}
+            st.info(f"🌍 Language: **{lang_labels[default_language]}** (set in sidebar)")
         
         if st.button("✨ Generate Components", key="generate", type="primary", use_container_width=True):
             if selected_components:
@@ -641,13 +651,13 @@ with tab1:
                     result = call_generate_api(
                         st.session_state.tokens,
                         selected_components,
-                        language
+                        default_language
                     )
                     
                     if result:
                         st.session_state.generated_code = result.get('code')
                         st.session_state.metrics['components_generated'] += len(selected_components)
-                        st.session_state.metrics['languages_used'].add(language)
+                        st.session_state.metrics['languages_used'].add(default_language)
                         st.success("✅ Components generated!")
             else:
                 st.warning("Please select at least one component")
@@ -662,7 +672,8 @@ with tab1:
 # ============================================================================
 
 with tab2:
-    st.markdown("#### 💬 Text-to-Code")
+    st.image("icons/icons8-chat-bubble-48.png", width=36)
+    st.markdown("#### Text-to-Code")
     st.markdown("Describe the UI component or page you want to build — IBM Bob will generate production-ready code.")
     
     st.divider()
@@ -676,7 +687,7 @@ with tab2:
     )
     
     # Options row
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     
     with col1:
         framework = st.selectbox(
@@ -692,32 +703,18 @@ with tab2:
             key="prompt_styling"
         )
     
-    with col3:
-        prompt_language = st.selectbox(
-            "Content Language:",
-            ["en", "es", "fr", "de", "ja"],
-            format_func=lambda x: {
-                "en": "🇺🇸 English",
-                "es": "🇪🇸 Español",
-                "fr": "🇫🇷 Français",
-                "de": "🇩🇪 Deutsch",
-                "ja": "🇯🇵 日本語"
-            }[x],
-            key="prompt_language"
-        )
-    
     # Generate button
     if st.button("🚀 Generate Code from Prompt", type="primary", use_container_width=True, key="prompt_generate"):
         if prompt_text.strip():
             with st.spinner("🤖 IBM Bob is generating your component..."):
                 # Build enhanced prompt with framework/styling context
                 enhanced_prompt = f"{prompt_text}\n\nFramework: {framework}\nStyling: {styling}"
-                result = call_prompt_api(enhanced_prompt, prompt_language)
+                result = call_prompt_api(enhanced_prompt, default_language)
                 
                 if result:
                     st.session_state.prompt_result = result.get('code', result.get('output', ''))
                     st.session_state.metrics['components_generated'] += 1
-                    st.session_state.metrics['languages_used'].add(prompt_language)
+                    st.session_state.metrics['languages_used'].add(default_language)
                     st.success("✅ Code generated successfully!")
                 else:
                     st.error("Failed to generate. Please check that the backend is online.")
@@ -786,7 +783,8 @@ with tab2:
 # ============================================================================
 
 with tab3:
-    st.markdown("#### 🎤 Voice-to-Code")
+    st.image("icons/icons8-mic-48.png", width=36)
+    st.markdown("#### Voice-to-Code")
     st.markdown("Describe your UI requirements by voice — Speechmatic transcribes and IBM Bob generates the code.")
     
     st.divider()
@@ -845,7 +843,8 @@ with tab3:
 # ============================================================================
 
 with tab4:
-    st.markdown("#### 🌍 Multi-Language Generation")
+    st.image("icons/icons8-language-48.png", width=36)
+    st.markdown("#### Multi-Language Generation")
     st.markdown("Generate UI components with fully internationalized text content — powered by **NativelyAI**.")
     
     st.divider()
@@ -875,20 +874,11 @@ with tab4:
     with col2:
         st.markdown("##### Generate")
         if st.session_state.tokens:
-            selected_language = st.selectbox(
-                "Choose target language:",
-                ["en", "es", "fr", "de", "ja"],
-                format_func=lambda x: {
-                    "en": "🇺🇸 English",
-                    "es": "🇪🇸 Español",
-                    "fr": "🇫🇷 Français",
-                    "de": "🇩🇪 Deutsch",
-                    "ja": "🇯🇵 日本語"
-                }[x],
-                key="ml_language_selector"
-            )
+            lang_labels = {"en": "🇺🇸 English", "es": "🇪🇸 Español", "fr": "🇫🇷 Français", "de": "🇩🇪 Deutsch", "ja": "🇯🇵 日本語"}
+            st.markdown(f"**Target Language:** {lang_labels[default_language]}")
+            st.caption("Change in the sidebar → Default Language")
             
-            if st.button("🌍 Generate in Selected Language", type="primary", use_container_width=True):
+            if st.button("🌍 Generate in Default Language", type="primary", use_container_width=True):
                 with st.spinner("Generating internationalized components..."):
                     st.info("NativelyAI is translating component text content.")
         else:
@@ -899,7 +889,8 @@ with tab4:
 # ============================================================================
 
 with tab5:
-    st.markdown("#### 📊 Session Dashboard")
+    st.image("icons/icons8-dashboard-layout-48.png", width=36)
+    st.markdown("#### Session Dashboard")
     st.caption("Real-time metrics for your current session")
     
     st.markdown("")
