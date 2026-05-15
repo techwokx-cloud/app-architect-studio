@@ -34,7 +34,7 @@ def load_icon(filename, width=36):
 
 st.set_page_config(
     page_title="App Architect Studio | IBM Bob Hackathon 2026",
-    page_icon="🏗️",
+    page_icon=os.path.join(ICONS_DIR, "favicon.png") if os.path.exists(os.path.join(ICONS_DIR, "favicon.png")) else "🏗️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -56,16 +56,16 @@ st.markdown("""
     .hero-container {
         text-align: center;
         padding: 2.5rem 1rem 1.5rem 1rem;
-        background: linear-gradient(135deg, #F0F4FF 0%, #F5F0FF 50%, #FFF0F7 100%);
+        background: linear-gradient(135deg, #EDF5FF 0%, #E8DAFF 50%, #D9FBFB 100%);
         border-radius: 16px;
-        border: 1px solid #E0E7FF;
+        border: 1px solid #D0E2FF;
         margin-bottom: 1.5rem;
     }
     
     .hero-title {
         font-size: 3em;
         font-weight: 800;
-        background: linear-gradient(135deg, #1E40AF 0%, #7C3AED 50%, #DB2777 100%);
+        background: linear-gradient(135deg, #0F62FE 0%, #8A3FFC 50%, #0F62FE 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -99,19 +99,19 @@ st.markdown("""
     
     .tech-badge {
         background: white;
-        border: 1px solid #E0E7FF;
+        border: 1px solid #D0E2FF;
         border-radius: 24px;
         padding: 8px 18px;
         font-size: 0.85em;
         font-weight: 600;
-        color: #3730A3;
+        color: #002D9C;
         box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
     
     /* Hackathon badge */
     .hackathon-badge {
         display: inline-block;
-        background: linear-gradient(135deg, #1E40AF, #7C3AED);
+        background: linear-gradient(135deg, #0F62FE, #8A3FFC);
         color: white;
         padding: 6px 16px;
         border-radius: 20px;
@@ -149,7 +149,7 @@ st.markdown("""
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #3B82F6, #7C3AED);
+        background: linear-gradient(135deg, #0F62FE, #8A3FFC);
         color: white;
         font-weight: 700;
         font-size: 0.9em;
@@ -195,7 +195,7 @@ st.markdown("""
         width: 56px;
         height: 56px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+        background: linear-gradient(135deg, #0F62FE, #8A3FFC);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -247,7 +247,8 @@ st.markdown("""
     
     /* Sidebar styling */
     [data-testid="stSidebar"] {
-        background: #FAFBFC;
+        background: #EDF5FF;
+        border-right: 1px solid #D0E2FF;
     }
     
     /* Footer */
@@ -260,8 +261,8 @@ st.markdown("""
     
     /* Prompt box */
     .prompt-section {
-        background: #F8FAFF;
-        border: 1px solid #E0E7FF;
+        background: #EDF5FF;
+        border: 1px solid #D0E2FF;
         border-radius: 12px;
         padding: 24px;
         margin: 1rem 0;
@@ -429,8 +430,9 @@ def display_code(code):
 # ============================================================================
 
 with st.sidebar:
-    st.markdown("### 🏗️ App Architect Studio")
-    st.caption("IBM Bob Hackathon 2026")
+    # IBM Bob logo at top of sidebar
+    load_icon("ibm-bob-logo.png", width=160)
+    st.markdown("### App Architect Studio")
     
     st.divider()
     
@@ -492,7 +494,7 @@ with st.sidebar:
 
 st.markdown("""
 <div class="hero-container">
-    <span class="hackathon-badge">🏆 IBM Bob Hackathon 2026</span>
+    <span class="hackathon-badge">🏆 Built with IBM Bob</span>
     <div class="hero-title">App Architect Studio</div>
     <div class="hero-subtitle">Transform Screenshots & Text Prompts into Production-Ready Code</div>
     <div class="hero-description">
@@ -510,6 +512,9 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# Hero image
+load_icon("hero-image.png", width=700)
 
 # ============================================================================
 # HOW IT WORKS
@@ -612,12 +617,12 @@ with tab1:
         else:
             st.markdown("""
             <div style="
-                border: 2px dashed #C7D2FE;
+                border: 2px dashed #A6C8FF;
                 border-radius: 12px;
                 padding: 3rem 2rem;
                 text-align: center;
                 color: #6B7280;
-                background: #F8FAFF;
+                background: #EDF5FF;
             ">
                 <p style="font-size: 2.5em; margin-bottom: 0.3em;">📸</p>
                 <p style="font-weight: 500; color: #374151;">Drop a screenshot here</p>
@@ -811,12 +816,12 @@ with tab3:
         
         st.markdown("""
         <div style="
-            border: 2px dashed #C7D2FE;
+            border: 2px dashed #A6C8FF;
             border-radius: 12px;
             padding: 3rem;
             text-align: center;
             color: #6B7280;
-            background: #F8FAFF;
+            background: #EDF5FF;
             margin: 1rem 0;
         ">
             <p style="font-size: 3em; margin-bottom: 0.3em;">🎙️</p>
@@ -974,5 +979,3 @@ st.markdown("""
     </p>
 </div>
 """, unsafe_allow_html=True)
-
-
