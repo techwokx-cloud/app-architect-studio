@@ -236,46 +236,6 @@ st.markdown("""
         background: #FAFBFC;
     }
     
-    .sidebar-team {
-        background: white;
-        border: 1px solid #E5E7EB;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 8px;
-    }
-    
-    .sidebar-member {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 0;
-    }
-    
-    .sidebar-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #3B82F6, #8B5CF6);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: 0.75em;
-        flex-shrink: 0;
-    }
-    
-    .sidebar-name {
-        font-weight: 600;
-        font-size: 0.85em;
-        color: #1F2937;
-    }
-    
-    .sidebar-handle {
-        font-size: 0.75em;
-        color: #6B7280;
-    }
-    
     /* Footer */
     .footer-section {
         text-align: center;
@@ -284,23 +244,13 @@ st.markdown("""
         font-size: 0.85em;
     }
     
-    /* Feature pills */
-    .feature-pills {
-        display: flex;
-        justify-content: center;
-        gap: 0.8rem;
-        flex-wrap: wrap;
-        margin-top: 1rem;
-    }
-    
-    .feature-pill {
-        background: #F3F4F6;
-        border: 1px solid #E5E7EB;
-        border-radius: 20px;
-        padding: 8px 16px;
-        font-size: 0.85em;
-        font-weight: 500;
-        color: #374151;
+    /* Prompt box */
+    .prompt-section {
+        background: #F8FAFF;
+        border: 1px solid #E0E7FF;
+        border-radius: 12px;
+        padding: 24px;
+        margin: 1rem 0;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -324,6 +274,8 @@ if 'generated_code' not in st.session_state:
     st.session_state.generated_code = None
 if 'voice_transcript' not in st.session_state:
     st.session_state.voice_transcript = None
+if 'prompt_result' not in st.session_state:
+    st.session_state.prompt_result = None
 if 'metrics' not in st.session_state:
     st.session_state.metrics = {
         'components_generated': 0,
@@ -376,6 +328,22 @@ def call_generate_api(tokens, component_names, language="en"):
             json={
                 "tokens": tokens,
                 "componentNames": component_names,
+                "language": language
+            },
+            timeout=API_TIMEOUT
+        )
+        return response.json()
+    except Exception as e:
+        st.error(f"API Error: {str(e)}")
+        return None
+
+def call_prompt_api(prompt, language="en"):
+    """Call text prompt generation endpoint"""
+    try:
+        response = get_session().post(
+            f"{API_BASE_URL}/api/prompt",
+            json={
+                "prompt": prompt,
                 "language": language
             },
             timeout=API_TIMEOUT
@@ -443,7 +411,7 @@ def display_code(code):
             st.toast("Deployed to Vultr Object Storage!", icon="🚀")
 
 # ============================================================================
-# SIDEBAR
+# SIDEBAR (No team — it's on front page)
 # ============================================================================
 
 with st.sidebar:
@@ -461,27 +429,13 @@ with st.sidebar:
     
     st.divider()
     
-    # Team Members
-    st.markdown("##### 👥 Team")
-    
-    team_members = [
-        {"name": "Sandzhi-Garia Ochirov", "handle": "Gary04", "initial": "S"},
-        {"name": "Cyril Nii Teiko Tagoe", "handle": "cyril_tagoe794", "initial": "C"},
-        {"name": "George Jabley", "handle": "george_jabley451", "initial": "G"},
-    ]
-    
-    st.markdown('<div class="sidebar-team">', unsafe_allow_html=True)
-    for member in team_members:
-        st.markdown(f"""
-        <div class="sidebar-member">
-            <div class="sidebar-avatar">{member['initial']}</div>
-            <div>
-                <div class="sidebar-name">{member['name']}</div>
-                <div class="sidebar-handle">@{member['handle']}</div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Navigation info
+    st.markdown("##### 🧭 Navigation")
+    st.caption("**Vision-to-Code** — Upload screenshots")
+    st.caption("**Text Prompt** — Describe your UI")
+    st.caption("**Voice Mode** — Speak your requirements")
+    st.caption("**Multi-Language** — i18n generation")
+    st.caption("**Dashboard** — Session metrics")
     
     st.divider()
     
@@ -508,12 +462,13 @@ st.markdown("""
 <div class="hero-container">
     <span class="hackathon-badge">🏆 IBM Bob Hackathon 2026</span>
     <div class="hero-title">App Architect Studio</div>
-    <div class="hero-subtitle">Transform Screenshots into Production-Ready Code — Instantly</div>
+    <div class="hero-subtitle">Transform Screenshots & Text Prompts into Production-Ready Code</div>
     <div class="hero-description">
-        An autonomous agentic ecosystem that converts UI screenshots and voice-driven business briefs 
-        into secure, audited, production-ready code. Upload any app or website screenshot, and our AI pipeline 
-        extracts design tokens (colors, fonts, spacing), generates pixel-perfect React/TypeScript components, 
-        and enforces style consistency through IBM Bob's Style-Lock system — all in seconds, not hours.
+        An autonomous agentic ecosystem that converts UI screenshots, text descriptions, and voice-driven 
+        business briefs into secure, audited, production-ready code. Upload any app or website screenshot, 
+        type a natural language description, or speak your requirements — and our AI pipeline powered by 
+        IBM Bob extracts design tokens, generates pixel-perfect React/TypeScript components, and enforces 
+        style consistency through Style-Lock — all in seconds, not hours.
     </div>
     <div class="powered-by">
         <span class="tech-badge">🤖 IBM Bob</span>
@@ -537,8 +492,8 @@ with col1:
     st.markdown("""
     <div class="step-card">
         <div class="step-number">1</div>
-        <div class="step-title">Upload</div>
-        <div class="step-desc">Upload a screenshot or describe your UI via voice</div>
+        <div class="step-title">Input</div>
+        <div class="step-desc">Upload a screenshot, type a prompt, or describe via voice</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -572,7 +527,7 @@ with col4:
 st.markdown("")
 
 # ============================================================================
-# TEAM SECTION (Prominent)
+# TEAM SECTION
 # ============================================================================
 
 st.markdown("""
@@ -605,8 +560,9 @@ st.divider()
 # MAIN INTERFACE
 # ============================================================================
 
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🎨 Vision-to-Code",
+    "💬 Text Prompt",
     "🎤 Voice Mode",
     "🌍 Multi-Language",
     "📊 Dashboard"
@@ -620,8 +576,8 @@ with tab1:
     col1, col2 = st.columns([1, 1], gap="large")
     
     with col1:
-        st.markdown("#### 1️⃣ Upload Screenshot")
-        st.caption("Upload a screenshot of any website or app UI to begin")
+        st.markdown("#### 📸 Upload Screenshot")
+        st.caption("Upload a screenshot of any website or app UI to extract design tokens")
         
         uploaded_file = st.file_uploader(
             "Choose an image",
@@ -661,20 +617,20 @@ with tab1:
     
     with col2:
         if st.session_state.tokens:
-            st.markdown("#### 2️⃣ Extracted Design Tokens")
+            st.markdown("#### 🎯 Extracted Design Tokens")
             display_tokens(st.session_state.tokens)
             
             if st.session_state.style_lock:
                 st.divider()
                 display_style_lock(st.session_state.style_lock)
         else:
-            st.markdown("#### 2️⃣ Design Tokens")
+            st.markdown("#### 🎯 Design Tokens")
             st.info("Upload a screenshot to extract colors, fonts, spacing, and component structure automatically.")
     
     # Component generation section
     if st.session_state.tokens:
         st.divider()
-        st.markdown("#### 3️⃣ Generate Components")
+        st.markdown("#### ✨ Generate Components")
         
         tokens = st.session_state.tokens
         all_components = [c['name'] for c in tokens.get('components', [])]
@@ -722,14 +678,138 @@ with tab1:
     
     if st.session_state.generated_code:
         st.divider()
-        st.markdown("#### 4️⃣ Generated Code")
+        st.markdown("#### 📄 Generated Code")
         display_code(st.session_state.generated_code)
 
 # ============================================================================
-# TAB 2: VOICE MODE
+# TAB 2: TEXT PROMPT
 # ============================================================================
 
 with tab2:
+    st.markdown("#### 💬 Text-to-Code")
+    st.markdown("Describe the UI component or page you want to build — IBM Bob will generate production-ready code.")
+    
+    st.divider()
+    
+    # Prompt input
+    prompt_text = st.text_area(
+        "Describe what you want to build:",
+        placeholder="e.g., Create a modern pricing page with 3 tiers (Basic at $9/mo, Pro at $29/mo, Enterprise at $99/mo). Each card should have a feature list, a highlighted 'Most Popular' badge on the Pro tier, and gradient CTA buttons. Use a clean white background with subtle shadows.",
+        height=150,
+        key="text_prompt_input"
+    )
+    
+    # Options row
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        framework = st.selectbox(
+            "Framework:",
+            ["React + TypeScript", "React + JavaScript", "Vue.js", "HTML + CSS", "Next.js"],
+            key="prompt_framework"
+        )
+    
+    with col2:
+        styling = st.selectbox(
+            "Styling:",
+            ["Tailwind CSS", "CSS Modules", "Styled Components", "Plain CSS", "Sass"],
+            key="prompt_styling"
+        )
+    
+    with col3:
+        prompt_language = st.selectbox(
+            "Content Language:",
+            ["en", "es", "fr", "de", "ja"],
+            format_func=lambda x: {
+                "en": "🇺🇸 English",
+                "es": "🇪🇸 Español",
+                "fr": "🇫🇷 Français",
+                "de": "🇩🇪 Deutsch",
+                "ja": "🇯🇵 日本語"
+            }[x],
+            key="prompt_language"
+        )
+    
+    # Generate button
+    if st.button("🚀 Generate Code from Prompt", type="primary", use_container_width=True, key="prompt_generate"):
+        if prompt_text.strip():
+            with st.spinner("🤖 IBM Bob is generating your component..."):
+                # Build enhanced prompt with framework/styling context
+                enhanced_prompt = f"{prompt_text}\n\nFramework: {framework}\nStyling: {styling}"
+                result = call_prompt_api(enhanced_prompt, prompt_language)
+                
+                if result:
+                    st.session_state.prompt_result = result.get('code', result.get('output', ''))
+                    st.session_state.metrics['components_generated'] += 1
+                    st.session_state.metrics['languages_used'].add(prompt_language)
+                    st.success("✅ Code generated successfully!")
+                else:
+                    st.error("Failed to generate. Please check that the backend is online.")
+        else:
+            st.warning("Please enter a description of what you want to build.")
+    
+    # Display result
+    if st.session_state.prompt_result:
+        st.divider()
+        st.markdown("#### 📄 Generated Code")
+        st.code(st.session_state.prompt_result, language="typescript")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.download_button(
+                label="📥 Download",
+                data=st.session_state.prompt_result,
+                file_name="component.tsx",
+                mime="text/plain",
+                use_container_width=True
+            )
+        with col2:
+            if st.button("🔄 Regenerate", use_container_width=True, key="prompt_regen"):
+                st.session_state.prompt_result = None
+                st.rerun()
+        with col3:
+            if st.button("☁️ Deploy to Vultr", use_container_width=True, key="prompt_deploy"):
+                st.toast("Deployed!", icon="🚀")
+    
+    # Example prompts
+    st.divider()
+    st.markdown("##### 💡 Example Prompts")
+    
+    example_col1, example_col2 = st.columns(2)
+    
+    with example_col1:
+        st.markdown("""
+        <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:14px 16px; margin-bottom:8px;">
+            <span style="color:#6B7280; font-size:0.75em; text-transform:uppercase; font-weight:600;">Landing Page</span><br>
+            <span style="color:#1F2937; font-size:0.9em;">"Build a SaaS landing page with hero section, feature grid, testimonials carousel, and CTA"</span>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:14px 16px; margin-bottom:8px;">
+            <span style="color:#6B7280; font-size:0.75em; text-transform:uppercase; font-weight:600;">Dashboard</span><br>
+            <span style="color:#1F2937; font-size:0.9em;">"Create an analytics dashboard with KPI cards, line chart, bar chart, and data table"</span>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with example_col2:
+        st.markdown("""
+        <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:14px 16px; margin-bottom:8px;">
+            <span style="color:#6B7280; font-size:0.75em; text-transform:uppercase; font-weight:600;">E-Commerce</span><br>
+            <span style="color:#1F2937; font-size:0.9em;">"Design a product card grid with image, price, rating stars, and add-to-cart button"</span>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:14px 16px; margin-bottom:8px;">
+            <span style="color:#6B7280; font-size:0.75em; text-transform:uppercase; font-weight:600;">Authentication</span><br>
+            <span style="color:#1F2937; font-size:0.9em;">"Generate a sign-up form with email, password, confirm password, and Google/GitHub OAuth buttons"</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+# ============================================================================
+# TAB 3: VOICE MODE
+# ============================================================================
+
+with tab3:
     st.markdown("#### 🎤 Voice-to-Code")
     st.markdown("Describe your UI requirements by voice — Speechmatic transcribes and IBM Bob generates the code.")
     
@@ -762,12 +842,10 @@ with tab2:
         
         voice_text = st.text_area(
             "Or type your description:",
-            placeholder="e.g., Create a hero section with a gradient background, centered headline, subtitle text, and two CTA buttons side by side...",
-            height=120
+            placeholder="e.g., Create a hero section with a gradient background, centered headline, subtitle text, and two CTA buttons...",
+            height=100,
+            key="voice_fallback"
         )
-        
-        if voice_text and st.button("✨ Generate from Description", use_container_width=True):
-            st.info("Voice-to-code generation will be processed by IBM Bob.")
     
     with col2:
         st.markdown("##### 💡 Example Voice Commands")
@@ -781,16 +859,16 @@ with tab2:
         for i, ex in enumerate(examples):
             st.markdown(f"""
             <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:12px 16px; margin-bottom:8px;">
-                <span style="color:#6B7280; font-size:0.8em;">Example {i+1}</span><br>
+                <span style="color:#6B7280; font-size:0.75em; text-transform:uppercase; font-weight:600;">Example {i+1}</span><br>
                 <span style="color:#1F2937; font-size:0.9em;">"{ex}"</span>
             </div>
             """, unsafe_allow_html=True)
 
 # ============================================================================
-# TAB 3: MULTI-LANGUAGE
+# TAB 4: MULTI-LANGUAGE
 # ============================================================================
 
-with tab3:
+with tab4:
     st.markdown("#### 🌍 Multi-Language Generation")
     st.markdown("Generate UI components with fully internationalized text content — powered by **NativelyAI**.")
     
@@ -835,16 +913,16 @@ with tab3:
             )
             
             if st.button("🌍 Generate in Selected Language", type="primary", use_container_width=True):
-                with st.spinner(f"Generating internationalized components..."):
+                with st.spinner("Generating internationalized components..."):
                     st.info("NativelyAI is translating component text content.")
         else:
             st.info("Upload a screenshot in the **Vision-to-Code** tab first to unlock multi-language generation.")
 
 # ============================================================================
-# TAB 4: DASHBOARD
+# TAB 5: DASHBOARD
 # ============================================================================
 
-with tab4:
+with tab5:
     st.markdown("#### 📊 Session Dashboard")
     st.caption("Real-time metrics for your current session")
     
