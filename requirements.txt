@@ -1,0 +1,7 @@
+streamlit
+requests
+Pillow
+python-dotenv
+ibm-watsonx-ai
+fastapi
+uvicorn[standard]
