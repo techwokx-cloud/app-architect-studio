@@ -259,29 +259,3 @@ If you find this project useful for the hackathon, please give it a star ⭐ on 
 
 Built with 🤖 by Team TechWokx | IBM Bob Hackathon 2026
 
-text
-
----
-
-## How to Update Your GitHub Repository:
-
-```bash
-# Navigate to your local repo
-cd /path/to/app-architect-studio
-
-# Replace README.md with the new content
-# (Copy the content above into README.md)
-
-# Commit and push
-git add README.md
-git commit -m "docs: update README for IBM Bob Hackathon 2026 with judges criteria and deployment guide"
-git push origin main
-Key Sections for Judges:
-Section	Why It Matters
-Judges Criteria Compliance	Directly shows how you meet each criterion
-Clear Use of IBM Bob	Explicitly documents Bob integration throughout
-Business Value	Quantifies time savings (5+ hours per component)
-Architecture Diagram	Professional system design documentation
-Team Section	Clear attribution and roles
-This README will make a strong impression on the judges when they review your GitHub repository!
-
