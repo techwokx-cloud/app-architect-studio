@@ -12,7 +12,6 @@ import json
 import os
 from dotenv import load_dotenv
 from datetime import datetime
-import time
 
 load_dotenv()
 
@@ -33,7 +32,6 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    /* Import Google Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     
     * {
@@ -46,7 +44,6 @@ st.markdown("""
         max-width: 1400px;
     }
     
-    /* Animations */
     @keyframes gradientShift {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
@@ -70,7 +67,6 @@ st.markdown("""
         to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Hero Section */
     .hero-container {
         background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 25%, #2E1065 50%, #4C1D95 75%, #0F172A 100%);
         background-size: 300% 300%;
@@ -122,7 +118,6 @@ st.markdown("""
         animation: fadeInUp 1s ease-out;
     }
     
-    /* Sponsors Container */
     .sponsors-container {
         margin-top: 2.5rem;
         padding: 1.5rem;
@@ -162,7 +157,6 @@ st.markdown("""
         filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.3));
     }
     
-    /* Team Section */
     .team-section {
         background: white;
         border-radius: 24px;
@@ -220,7 +214,6 @@ st.markdown("""
         margin-top: 4px;
     }
     
-    /* Features Row */
     .features-container {
         display: flex;
         justify-content: center;
@@ -250,7 +243,6 @@ st.markdown("""
         color: #4B5563;
     }
     
-    /* Status Indicators */
     .status-online {
         display: inline-flex;
         align-items: center;
@@ -264,7 +256,6 @@ st.markdown("""
         font-weight: 500;
     }
     
-    /* Footer */
     .footer-section {
         text-align: center;
         padding: 2rem 0 1rem 0;
@@ -272,16 +263,6 @@ st.markdown("""
         font-size: 0.85em;
         border-top: 1px solid #E5E7EB;
         margin-top: 2rem;
-    }
-    
-    /* Tabs Styling */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-    }
-    
-    .stTabs [data-baseweb="tab"] {
-        padding: 8px 16px;
-        border-radius: 8px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -327,34 +308,6 @@ def test_backend():
 
 def convert_image_to_base64(uploaded_file):
     return base64.b64encode(uploaded_file.getvalue()).decode()
-
-def call_vision_api(image_base64):
-    try:
-        response = get_session().post(
-            f"{API_BASE_URL}/api/vision",
-            json={"image": image_base64},
-            timeout=API_TIMEOUT
-        )
-        return response.json()
-    except Exception as e:
-        st.error(f"API Error: {str(e)}")
-        return None
-
-def call_generate_api(tokens, component_names, language="en"):
-    try:
-        response = get_session().post(
-            f"{API_BASE_URL}/api/generate",
-            json={
-                "tokens": tokens,
-                "componentNames": component_names,
-                "language": language
-            },
-            timeout=API_TIMEOUT
-        )
-        return response.json()
-    except Exception as e:
-        st.error(f"API Error: {str(e)}")
-        return None
 
 # ============================================================================
 # SIDEBAR
@@ -402,7 +355,7 @@ with st.sidebar:
     st.markdown("[☁️ Vultr Dashboard](https://vultr.com)")
 
 # ============================================================================
-# HERO SECTION WITH ALL SPONSOR LOGOS (USING RAW GITHUB URLs)
+# HERO SECTION WITH SPONSORS (CRITICAL: unsafe_allow_html=True is present)
 # ============================================================================
 
 st.markdown("""
@@ -516,54 +469,20 @@ with tab1:
             st.image(image, use_container_width=True)
             
             if st.button("🔍 Analyze with IBM Bob", type="primary", use_container_width=True):
-                with st.spinner("📸 IBM Bob is extracting design tokens..."):
-                    image_base64 = convert_image_to_base64(uploaded_file)
-                    result = call_vision_api(image_base64)
-                    
-                    if result:
-                        st.session_state.tokens = result.get('tokens')
-                        st.session_state.style_lock = result.get('styleLock')
-                        st.success("✅ Design tokens extracted successfully!")
+                st.success("✅ Demo: IBM Bob would extract design tokens here!")
+                st.info("📸 Vision API would return: colors, fonts, spacing, components")
     
     with col2:
-        if st.session_state.tokens:
-            st.markdown("#### 2️⃣ Extracted Design Tokens")
-            tokens = st.session_state.tokens
-            
-            if tokens.get('colors'):
-                st.markdown("**🎨 Colors**")
-                for color in tokens.get('colors', [])[:3]:
-                    st.markdown(f"- {color.get('name', 'Unknown')}: `{color.get('value', '#000')}`")
-            
-            if tokens.get('fonts'):
-                st.markdown("**🔤 Typography**")
-                for font in tokens.get('fonts', [])[:2]:
-                    st.markdown(f"- {font.get('name', 'Unknown')}: {font.get('family', '')}")
-            
-            if st.session_state.style_lock:
-                st.success("🔒 **Style-Lock Active** - IBM Bob enforcing design consistency")
-        else:
-            st.info("📸 Upload a screenshot to extract colors, fonts, and components")
-    
-    if st.session_state.tokens:
-        st.divider()
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("✨ Generate React Components", type="primary", use_container_width=True):
-                with st.spinner("🤖 IBM Bob is generating your components..."):
-                    result = call_generate_api(
-                        st.session_state.tokens, 
-                        ["Button", "Header", "Card"], 
-                        "en"
-                    )
-                    if result:
-                        st.session_state.generated_code = result.get('code')
-                        st.session_state.metrics['components_generated'] += 3
-                        st.success("✅ Components generated successfully!")
+        st.markdown("#### 2️⃣ Extracted Design Tokens")
+        st.info("📸 Upload a screenshot to extract colors, fonts, and components")
         
-        if st.session_state.generated_code:
-            st.markdown("#### 3️⃣ Generated Code")
-            st.code(st.session_state.generated_code, language="typescript")
+        st.markdown("**Example Output:**")
+        st.markdown("""
+        - 🎨 Primary: `#3B82F6`
+        - 🎨 Secondary: `#8B5CF6`
+        - 🔤 Font: Inter 16px
+        - 📏 Spacing: 1rem
+        """)
 
 # ============================================================================
 # TAB 2: VOICE MODE
@@ -578,7 +497,6 @@ with tab2:
         "Create a responsive navigation bar with logo and three menu items",
         "Build a pricing card with three tiers — Basic, Pro, and Enterprise",
         "Generate a login form with email, password, and social auth buttons",
-        "Design a dashboard sidebar with icons and collapsible menu items",
     ]
     for ex in examples:
         st.markdown(f"- \"{ex}\"")
@@ -590,8 +508,7 @@ with tab2:
     )
     
     if voice_text and st.button("✨ Generate from Description", type="primary"):
-        st.success(f"✅ Processing: '{voice_text[:100]}...'")
-        st.info("🤖 IBM Bob is generating your components with Style-Lock enforcement")
+        st.success(f"✅ Demo: IBM Bob would generate code from: '{voice_text[:100]}...'")
 
 # ============================================================================
 # TAB 3: MULTI-LANGUAGE
@@ -599,7 +516,6 @@ with tab2:
 
 with tab3:
     st.markdown("#### 🌍 Multi-Language Generation with NativelyAI")
-    st.markdown("Generate UI components with fully internationalized text content in any language.")
     
     languages = {
         "en": "🇺🇸 English",
@@ -615,11 +531,9 @@ with tab3:
         format_func=lambda x: languages[x]
     )
     
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🌍 Generate Internationalized Components", type="primary"):
-            st.success(f"✅ Generating components in {languages[selected_lang]}")
-            st.session_state.metrics['languages_used'].add(selected_lang)
+    if st.button("🌍 Generate Internationalized Components", type="primary"):
+        st.success(f"✅ Demo: Generating components in {languages[selected_lang]}")
+        st.session_state.metrics['languages_used'].add(selected_lang)
 
 # ============================================================================
 # TAB 4: DASHBOARD
@@ -627,15 +541,11 @@ with tab3:
 
 with tab4:
     st.markdown("#### 📊 IBM Bob Session Dashboard")
-    st.caption("Real-time metrics for your current session")
     
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.metric(
-            "Components Generated", 
-            st.session_state.metrics['components_generated']
-        )
+        st.metric("Components Generated", st.session_state.metrics['components_generated'])
     
     with col2:
         minutes_saved = st.session_state.metrics['components_generated'] * 5
@@ -645,7 +555,7 @@ with tab4:
         st.metric("Languages Used", len(st.session_state.metrics['languages_used']))
     
     with col4:
-        st.metric("Backend Status", "Online" if test_backend() else "Starting")
+        st.metric("Backend Status", "Demo Mode")
     
     st.divider()
     
