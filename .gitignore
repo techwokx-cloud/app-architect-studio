@@ -1,7 +1,13 @@
 .env
+backend/.env
+frontend/.env
 .streamlit/secrets.toml
+frontend/.streamlit/secrets.toml
 sessions/
+backend/sessions/
 __pycache__/
 *.pyc
 .venv/
 venv/
+backend/venv/
+frontend/venv/

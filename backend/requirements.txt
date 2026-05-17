@@ -3,3 +3,5 @@ uvicorn[standard]
 python-dotenv
 ibm-watsonx-ai
 pydantic
+requests
+boto3

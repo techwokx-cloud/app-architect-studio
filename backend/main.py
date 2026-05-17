@@ -1,6 +1,6 @@
 """
 App Architect Studio - FastAPI Backend
-Production-ready API server for Vultr deployment
+Production-ready API server for cloud deployment
 """
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks
@@ -14,6 +14,12 @@ import json
 from datetime import datetime
 from typing import List, Optional
 
+from integrations import (
+    generate_with_google,
+    integration_status,
+    save_to_cloudflare_r2,
+    transcribe_with_speechmatics,
+)
 from watsonx_client import (
     TEXT_MODEL,
     VISION_MODEL,
@@ -67,6 +73,23 @@ class GenerateResponse(BaseModel):
     tokens: dict
 
 
+class VoiceRequest(BaseModel):
+    audioBase64: str
+    language: str = "en"
+    format: str = "wav"
+
+
+class GoogleGenerateRequest(BaseModel):
+    prompt: str
+    model: Optional[str] = None
+
+
+class StorageSaveRequest(BaseModel):
+    key: str
+    content: str
+    contentType: str = "text/plain"
+
+
 @app.get("/health")
 async def health_check():
     return {
@@ -74,7 +97,7 @@ async def health_check():
         "service": "App Architect Studio API",
         "timestamp": datetime.now().isoformat(),
         "version": "1.0.0",
-        "watsonx_configured": credentials_configured(),
+        "integrations": integration_status(),
     }
 
 
@@ -95,7 +118,23 @@ async def root():
             "generate": "/api/generate (POST)",
             "wordpress": "/api/wordpress (POST)",
             "voice": "/api/voice (POST)",
+            "google_generate": "/api/google/generate (POST)",
+            "storage_save": "/api/storage/save (POST)",
             "sessions": "/api/sessions (GET, POST)",
+            "status": "/api/status (GET)",
+        },
+    }
+
+
+@app.get("/api/status")
+async def api_status():
+    return {
+        "status": "online",
+        "timestamp": datetime.now().isoformat(),
+        "integrations": integration_status(),
+        "models": {
+            "vision": VISION_MODEL,
+            "text": TEXT_MODEL,
         },
     }
 
@@ -260,18 +299,79 @@ Output:
 
 
 @app.post("/api/voice")
-async def process_voice(request: dict, background_tasks: BackgroundTasks):
+async def process_voice(request: VoiceRequest, background_tasks: BackgroundTasks):
     try:
-        audio_base64 = request.get("audioBase64", "")
-        background_tasks.add_task(
-            log_session, "voice", {"audioLength": len(audio_base64)}, "success"
+        if not integration_status()["speechmatics"]:
+            raise HTTPException(
+                status_code=503,
+                detail="Speechmatics is not configured (SPEECHMATICS_API_KEY)",
+            )
+        result = transcribe_with_speechmatics(
+            request.audioBase64,
+            language=request.language,
+            audio_format=request.format,
         )
-        return {
-            "success": True,
-            "message": "Voice processing - coming soon with Speechmatic integration",
-        }
+        background_tasks.add_task(
+            log_session,
+            "voice",
+            {
+                "audioLength": len(request.audioBase64),
+                "language": request.language,
+                "jobId": result["job_id"],
+            },
+            "success",
+        )
+        return {"success": True, **result}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Voice error: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/google/generate")
+async def google_generate(request: GoogleGenerateRequest):
+    try:
+        if not integration_status()["google"]:
+            raise HTTPException(
+                status_code=503,
+                detail="Google API is not configured (GOOGLE_API_KEY)",
+            )
+        return generate_with_google(request.prompt, request.model)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Google generate error: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/storage/save")
+async def storage_save(request: StorageSaveRequest, background_tasks: BackgroundTasks):
+    try:
+        if not integration_status()["cloudflare_r2"]:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "Cloudflare R2 is not configured "
+                    "(CLOUDFLARE_R2_*)"
+                ),
+            )
+        result = save_to_cloudflare_r2(
+            request.key,
+            request.content,
+            request.contentType,
+        )
+        background_tasks.add_task(
+            log_session,
+            "storage",
+            {"key": request.key, "contentType": request.contentType},
+            "success",
+        )
+        return {"success": True, **result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Storage save error: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 

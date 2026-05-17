@@ -10,14 +10,20 @@ import re
 from functools import lru_cache
 from typing import Any, Optional, Tuple
 
+from dotenv import load_dotenv
 from ibm_watsonx_ai import Credentials
 from ibm_watsonx_ai.foundation_models import ModelInference
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 
-TEXT_MODEL = "ibm/granite-3-8b-instruct"
-VISION_MODEL = "ibm/granite-vision-3-2-2b"
+load_dotenv()
 
-VISION_TOKEN_PROMPT = """Extract design tokens from this screenshot. Return ONLY valid JSON:
+TEXT_MODEL = os.getenv("WATSONX_TEXT_MODEL", "ibm/granite-3-8b-instruct")
+VISION_MODEL = os.getenv("WATSONX_VISION_MODEL", "ibm/granite-vision-3-2-2b")
+
+VISION_TOKEN_PROMPT = """Analyze this UI screenshot and extract design tokens.
+
+Return ONLY valid JSON. Do not include markdown, explanations, comments, or code fences.
+The JSON must match this schema exactly:
 {
   "colors": [{"name": "primary", "value": "#3B82F6"}],
   "fonts": [{"name": "body", "family": "Inter", "size": "1rem", "weight": "400"}],
@@ -85,7 +91,14 @@ def clear_model_cache() -> None:
 
 
 def _chat_content(response: dict) -> str:
-    return response["choices"][0]["message"]["content"]
+    content = response["choices"][0]["message"]["content"]
+    if isinstance(content, list):
+        return "\n".join(
+            part.get("text", "")
+            for part in content
+            if isinstance(part, dict)
+        )
+    return str(content)
 
 
 def _usage_from_response(response: dict) -> dict[str, Any]:
@@ -98,10 +111,84 @@ def _usage_from_response(response: dict) -> dict[str, Any]:
 
 def extract_json_from_text(text: str) -> dict:
     cleaned = text.strip()
+    if not cleaned:
+        raise json.JSONDecodeError("Empty model response", cleaned, 0)
+
     if cleaned.startswith("```"):
-        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.IGNORECASE)
         cleaned = re.sub(r"\s*```$", "", cleaned)
-    return json.loads(cleaned.strip())
+
+    try:
+        return json.loads(cleaned.strip())
+    except json.JSONDecodeError:
+        pass
+
+    fenced = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL | re.IGNORECASE)
+    if fenced:
+        return json.loads(fenced.group(1))
+
+    start = cleaned.find("{")
+    if start == -1:
+        raise json.JSONDecodeError("No JSON object found", cleaned, 0)
+
+    depth = 0
+    in_string = False
+    escape = False
+    for idx, char in enumerate(cleaned[start:], start=start):
+        if escape:
+            escape = False
+            continue
+        if char == "\\":
+            escape = True
+            continue
+        if char == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return json.loads(cleaned[start : idx + 1])
+
+    raise json.JSONDecodeError("Unterminated JSON object", cleaned, start)
+
+
+def _normalize_tokens(tokens: dict) -> dict:
+    return {
+        "colors": tokens.get("colors") or [],
+        "fonts": tokens.get("fonts") or [],
+        "spacing": tokens.get("spacing") or [],
+        "components": tokens.get("components") or [],
+    }
+
+
+def _repair_tokens_response(raw_text: str) -> dict:
+    system = (
+        "You convert model output into strict JSON design tokens. "
+        "Return only valid JSON with keys: colors, fonts, spacing, components."
+    )
+    user = f"""Convert this output into valid JSON using this exact schema:
+{{
+  "colors": [{{"name": "primary", "value": "#3B82F6"}}],
+  "fonts": [{{"name": "body", "family": "Inter", "size": "1rem", "weight": "400"}}],
+  "spacing": [{{"name": "md", "value": "1rem"}}],
+  "components": [{{"name": "Button", "description": "Primary action button"}}]
+}}
+
+Model output:
+{raw_text}
+"""
+    response = _text_model().chat(
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+        params={GenParams.MAX_NEW_TOKENS: 1500, GenParams.TEMPERATURE: 0},
+    )
+    return extract_json_from_text(_chat_content(response))
 
 
 def analyze_screenshot(
@@ -129,8 +216,11 @@ def analyze_screenshot(
 
     response = _vision_model().chat(messages=messages)
     text = _chat_content(response)
-    tokens = extract_json_from_text(text)
-    return tokens, _usage_from_response(response)
+    try:
+        tokens = extract_json_from_text(text)
+    except json.JSONDecodeError:
+        tokens = _repair_tokens_response(text)
+    return _normalize_tokens(tokens), _usage_from_response(response)
 
 
 def generate_text(system: str, user: str) -> Tuple[str, dict]:

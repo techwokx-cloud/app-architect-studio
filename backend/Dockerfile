@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED=1
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY main.py watsonx_client.py ./
+COPY main.py watsonx_client.py integrations.py ./
 
 RUN mkdir -p sessions
 
