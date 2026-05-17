@@ -1,7 +1,6 @@
 """
 App Architect Studio - Streamlit Frontend
 IBM Bob Hackathon 2026 — Competition Entry
-FULLY WORKING - ALL FEATURES RESTORED
 """
 
 import streamlit as st
