@@ -58,7 +58,7 @@ st.markdown("""
     
     @keyframes pulse {
         0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.08); opacity: 0.9; }
+        50% { transform: scale(1.05); opacity: 0.9; }
         100% { transform: scale(1); opacity: 1; }
     }
     
@@ -69,7 +69,7 @@ st.markdown("""
     
     @keyframes glow {
         0% { text-shadow: 0 0 0px rgba(59,130,246,0); }
-        50% { text-shadow: 0 0 20px rgba(59,130,246,0.5); }
+        50% { text-shadow: 0 0 15px rgba(59,130,246,0.4); }
         100% { text-shadow: 0 0 0px rgba(59,130,246,0); }
     }
     
@@ -92,8 +92,8 @@ st.markdown("""
     /* Prominent Tagline Under Header */
     .tagline-container {
         text-align: center;
-        margin: 1.5rem 0 1rem 0;
-        padding: 1rem;
+        margin: 1.5rem 0 0.5rem 0;
+        padding: 0.5rem;
         animation: fadeInUp 1s ease-out;
     }
     
@@ -109,47 +109,27 @@ st.markdown("""
     }
     
     .tagline-arrow {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         color: #8B5CF6;
         margin: 0 0.5rem;
     }
     
-    .tagline-ibm {
-        background: linear-gradient(135deg, #FFD700, #FFA500);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    
-    /* App Title Image */
-    .app-title-container {
-        text-align: center;
-        margin: 0.5rem 0 0rem 0;
-        animation: fadeInUp 0.8s ease-out;
-    }
-    
-    .app-title-image {
-        height: 70px;
-        width: auto;
-        display: inline-block;
-    }
-    
-    /* IBM Bob Badge */
-    .bob-badge {
+    /* Small IBM Bob Badge */
+    .bob-badge-small {
         display: inline-block;
         background: linear-gradient(135deg, #FFD700, #FFA500);
         color: #1E1B4B;
-        padding: 6px 20px;
-        border-radius: 40px;
-        font-size: 0.75em;
-        font-weight: 800;
+        padding: 4px 16px;
+        border-radius: 30px;
+        font-size: 0.65em;
+        font-weight: 700;
         letter-spacing: 0.05em;
         text-transform: uppercase;
-        margin: 0.3rem 0 0.5rem 0;
+        margin: 0.2rem 0 0.8rem 0;
         animation: pulse 2s ease-in-out infinite;
     }
     
-    /* Team Section - SMALLER SIZE on Main Page */
+    /* Team Section - Smaller Size */
     .team-section {
         background: white;
         border-radius: 20px;
@@ -223,7 +203,7 @@ st.markdown("""
         justify-content: center;
         gap: 1.5rem;
         flex-wrap: wrap;
-        margin: 1.5rem 0;
+        margin: 1.5rem 0 1rem 0;
     }
     
     .feature-item {
@@ -345,7 +325,7 @@ def test_backend():
         return False
 
 # ============================================================================
-# SIDEBAR WITH IBM BOB LOGO AND SPONSORS (NO TEAM)
+# SIDEBAR WITH IBM BOB LOGO AND SPONSORS
 # ============================================================================
 
 with st.sidebar:
@@ -418,7 +398,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================================================
-# PROMINENT TAGLINE UNDER HEADER IMAGE
+# PROMINENT TAGLINE UNDER HEADER IMAGE (NO EXTRA TITLE IMAGE)
 # ============================================================================
 
 st.markdown("""
@@ -426,26 +406,14 @@ st.markdown("""
     <span class="tagline-main">SCREENSHOT TO CODE</span>
     <span class="tagline-arrow">→</span>
     <span class="tagline-main">PRODUCTION</span>
-    <span class="tagline-arrow">•</span>
-    <span class="tagline-main tagline-ibm">POWERED BY IBM BOB</span>
 </div>
 """, unsafe_allow_html=True)
 
 # ============================================================================
-# APP TITLE IMAGE
+# SMALL POWERED BY IBM BOB BADGE
 # ============================================================================
 
-st.markdown(f"""
-<div class="app-title-container">
-    <img src="https://raw.githubusercontent.com/techwokx-cloud/app-architect-studio/main/icons/app-title.png" class="app-title-image" alt="App Architect Studio Title">
-</div>
-""", unsafe_allow_html=True)
-
-# ============================================================================
-# IBM BOB BADGE
-# ============================================================================
-
-st.markdown('<div style="text-align:center;"><span class="bob-badge">🤖 POWERED BY IBM BOB</span></div>', unsafe_allow_html=True)
+st.markdown('<div style="text-align:center;"><span class="bob-badge-small">🤖 POWERED BY IBM BOB</span></div>', unsafe_allow_html=True)
 
 # ============================================================================
 # FEATURE ICONS
