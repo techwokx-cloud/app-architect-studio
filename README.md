@@ -31,6 +31,6 @@ The code is prepared for API keys to be added later:
 - IBM watsonx.ai / Granite: screenshot analysis and code generation
 - Speechmatics: voice transcription
 - Google Gemini: optional text helper endpoint
-- Cloudflare R2: saving generated artifacts
+- Vultr Object Storage: saving generated artifacts
 
 See `docs/SETUP.md` for local run commands and `docs/API_CONTRACT.md` for frontend/backend contracts.

@@ -17,7 +17,7 @@ from typing import List, Optional
 from integrations import (
     generate_with_google,
     integration_status,
-    save_to_cloudflare_r2,
+    save_to_vultr_object_storage,
     transcribe_with_speechmatics,
 )
 from watsonx_client import (
@@ -348,15 +348,15 @@ async def google_generate(request: GoogleGenerateRequest):
 @app.post("/api/storage/save")
 async def storage_save(request: StorageSaveRequest, background_tasks: BackgroundTasks):
     try:
-        if not integration_status()["cloudflare_r2"]:
+        if not integration_status()["vultr_object_storage"]:
             raise HTTPException(
                 status_code=503,
                 detail=(
-                    "Cloudflare R2 is not configured "
-                    "(CLOUDFLARE_R2_*)"
+                    "Vultr Object Storage is not configured "
+                    "(VULTR_OBJECT_STORAGE_*)"
                 ),
             )
-        result = save_to_cloudflare_r2(
+        result = save_to_vultr_object_storage(
             request.key,
             request.content,
             request.contentType,

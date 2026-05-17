@@ -29,10 +29,10 @@ def _env(*names: str, default: Optional[str] = None) -> Optional[str]:
 
 def _storage_configured() -> bool:
     return bool(
-        _env("CLOUDFLARE_R2_ENDPOINT", "VULTR_OBJECT_STORAGE_ENDPOINT")
-        and _env("CLOUDFLARE_R2_ACCESS_KEY_ID", "VULTR_OBJECT_STORAGE_ACCESS_KEY")
-        and _env("CLOUDFLARE_R2_SECRET_ACCESS_KEY", "VULTR_OBJECT_STORAGE_SECRET_KEY")
-        and _env("CLOUDFLARE_R2_BUCKET", "VULTR_OBJECT_STORAGE_BUCKET")
+        _env("VULTR_OBJECT_STORAGE_ENDPOINT", "CLOUDFLARE_R2_ENDPOINT")
+        and _env("VULTR_OBJECT_STORAGE_ACCESS_KEY", "CLOUDFLARE_R2_ACCESS_KEY_ID")
+        and _env("VULTR_OBJECT_STORAGE_SECRET_KEY", "CLOUDFLARE_R2_SECRET_ACCESS_KEY")
+        and _env("VULTR_OBJECT_STORAGE_BUCKET", "CLOUDFLARE_R2_BUCKET")
     )
 
 
@@ -41,7 +41,7 @@ def integration_status() -> dict[str, Any]:
         "watsonx": _configured("WATSONX_API_KEY", "WATSONX_PROJECT_ID"),
         "speechmatics": _configured("SPEECHMATICS_API_KEY"),
         "google": _configured("GOOGLE_API_KEY"),
-        "cloudflare_r2": _storage_configured(),
+        "vultr_object_storage": _storage_configured(),
     }
 
 
@@ -134,28 +134,28 @@ def generate_with_google(prompt: str, model: Optional[str] = None) -> dict[str, 
     return {"model": model_name, "text": text, "raw": data}
 
 
-def save_to_cloudflare_r2(
+def save_to_vultr_object_storage(
     key: str,
     content: str,
     content_type: str = "text/plain",
 ) -> dict[str, Any]:
-    """Save text content to Cloudflare R2 (S3-compatible)."""
+    """Save text content to Vultr Object Storage (S3-compatible)."""
     import boto3
 
-    endpoint = _env("CLOUDFLARE_R2_ENDPOINT", "VULTR_OBJECT_STORAGE_ENDPOINT")
+    endpoint = _env("VULTR_OBJECT_STORAGE_ENDPOINT", "CLOUDFLARE_R2_ENDPOINT")
     access_key = _env(
-        "CLOUDFLARE_R2_ACCESS_KEY_ID",
         "VULTR_OBJECT_STORAGE_ACCESS_KEY",
+        "CLOUDFLARE_R2_ACCESS_KEY_ID",
     )
     secret_key = _env(
-        "CLOUDFLARE_R2_SECRET_ACCESS_KEY",
         "VULTR_OBJECT_STORAGE_SECRET_KEY",
+        "CLOUDFLARE_R2_SECRET_ACCESS_KEY",
     )
-    bucket = _env("CLOUDFLARE_R2_BUCKET", "VULTR_OBJECT_STORAGE_BUCKET")
-    region = _env("CLOUDFLARE_R2_REGION", "VULTR_OBJECT_STORAGE_REGION", default="auto")
+    bucket = _env("VULTR_OBJECT_STORAGE_BUCKET", "CLOUDFLARE_R2_BUCKET")
+    region = _env("VULTR_OBJECT_STORAGE_REGION", "CLOUDFLARE_R2_REGION", default="ewr1")
 
     if not endpoint or not access_key or not secret_key or not bucket:
-        raise RuntimeError("Cloudflare R2 is not configured")
+        raise RuntimeError("Vultr Object Storage is not configured")
 
     client = boto3.client(
         "s3",

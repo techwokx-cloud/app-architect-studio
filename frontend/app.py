@@ -175,8 +175,8 @@ with tab_vision:
             file_name="components.tsx",
             mime="text/plain",
         )
-        storage_key = st.text_input("Cloudflare R2 object key", "components.tsx")
-        if st.button("Save to Cloudflare R2"):
+        storage_key = st.text_input("Vultr Object Storage key", "components.tsx")
+        if st.button("Save to Vultr Object Storage"):
             result = api_post(
                 "/api/storage/save",
                 {
