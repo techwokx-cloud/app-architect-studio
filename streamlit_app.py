@@ -54,7 +54,7 @@ LANGUAGES = {
 }
 
 # ============================================================================
-# UNIVERSAL APP GENERATOR - USING STRING FORMATTING (NO F-STRING ISSUES)
+# UNIVERSAL APP GENERATOR - USING STRING FORMATTING
 # ============================================================================
 
 def generate_app_from_prompt(prompt, language="en"):
@@ -76,7 +76,7 @@ def generate_app_from_prompt(prompt, language="en"):
             item = i
             break
     
-    # Return HTML using string format (not f-string with nested braces)
+    # Return HTML using string format
     html_template = '''<!DOCTYPE html>
 <html lang="{lang}">
 <head>
@@ -218,10 +218,10 @@ def generate_app_from_prompt(prompt, language="en"):
                 html += '<div class="flex-1">';
                 html += '<div class="flex items-center gap-3">';
                 html += '<input type="checkbox" onchange="toggleComplete(' + item.id + ')" ' + checkedAttr + ' class="w-5 h-5">';
-                html += '<span class="font-medium ' + completedClass + '">' + item.name + '</span>';
+                html += '<span class="font-medium ' + completedClass + '">' + this.escapeHtml(item.name) + '</span>';
                 html += '</div>';
                 if (item.details) {{
-                    html += '<p class="text-sm text-gray-500 mt-1 ml-8">' + item.details + '</p>';
+                    html += '<p class="text-sm text-gray-500 mt-1 ml-8">' + this.escapeHtml(item.details) + '</p>';
                 }}
                 html += '<p class="text-xs text-gray-400 mt-1 ml-8">Added: ' + item.date + '</p>';
                 html += '</div>';
@@ -229,6 +229,16 @@ def generate_app_from_prompt(prompt, language="en"):
                 html += '</div>';
             }}
             container.innerHTML = html;
+        }}
+        
+        function escapeHtml(text) {{
+            if (!text) return '';
+            return text.replace(/[&<>]/g, function(m) {{
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }});
         }}
         
         render();
@@ -407,7 +417,7 @@ with st.sidebar:
 st.image("https://raw.githubusercontent.com/techwokx-cloud/app-architect-studio/main/icons/header.png", use_container_width=True)
 
 # ============================================================================
-# NAVIGATION
+# NAVIGATION ICONS
 # ============================================================================
 
 icons = {
@@ -441,10 +451,16 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================================================
+# CREATE TABS PROPERLY
+# ============================================================================
+
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["🎨 Vision-to-Code", "⚡ Direct Generation", "🎤 Voice-to-Code", "🌍 Multi-Language", "📊 Dashboard"])
+
+# ============================================================================
 # TAB 1: VISION-TO-CODE
 # ============================================================================
 
-with st.tab("🎨 Vision-to-Code"):
+with tab1:
     st.header("Vision-to-Code")
     st.caption("Upload a UI screenshot - IBM Bob analyzes and generates matching code")
     
@@ -499,7 +515,7 @@ with st.tab("🎨 Vision-to-Code"):
 # TAB 2: DIRECT GENERATION
 # ============================================================================
 
-with st.tab("⚡ Direct Generation"):
+with tab2:
     st.header("Direct Generation")
     st.caption("Describe ANY app you want - IBM Bob generates complete working code")
     
@@ -541,7 +557,7 @@ with st.tab("⚡ Direct Generation"):
 # TAB 3: VOICE-TO-CODE
 # ============================================================================
 
-with st.tab("🎤 Voice-to-Code"):
+with tab3:
     st.header("Voice-to-Code")
     st.caption("Speak naturally - Speechmatics transcribes, IBM Bob generates code")
     
@@ -573,7 +589,7 @@ with st.tab("🎤 Voice-to-Code"):
 # TAB 4: MULTI-LANGUAGE
 # ============================================================================
 
-with st.tab("🌍 Multi-Language"):
+with tab4:
     st.header("Multi-Language Generation")
     current = LANGUAGES[st.session_state.global_language]
     st.info(f"🌐 Current Language: {current['flag']} {current['name']}")
@@ -588,7 +604,7 @@ with st.tab("🌍 Multi-Language"):
 # TAB 5: DASHBOARD
 # ============================================================================
 
-with st.tab("📊 Dashboard"):
+with tab5:
     st.header("Dashboard")
     current = LANGUAGES[st.session_state.global_language]
     
